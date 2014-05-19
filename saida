@@ -1,0 +1,18 @@
+capacidade do robô de 37 kilos
+objetos para levar são esses:
+(codigo, peso, estoque)
+0 2 10
+1 7 11
+2 11 10
+com busca A*:
+2 0 1
+0
+meta: 37
+peso: [0, 2, 7, 11]
+inicial: 0
+estoque: [0, 10, 11, 10]
+criterio: [0, None]
+melhor: 0
+melhor_precisao: 0
+no I
+================voltando==============
