@@ -108,7 +108,7 @@ def dfs(problema):
                 #print atual
 
 def busca_em_profundidade(meta, criterio, peso, estoque):
-    criterio .shuffle()
+    shuffle(criterio)
     problema = Problem(meta, criterio, peso, estoque, "profundidade")
     dfs(problema)
     return problema.solucao()
@@ -120,8 +120,8 @@ def busca_a_asterisco(meta, criterio, peso, estoque):
     dfs(problema)
     return problema.solucao()
 
-META = 37
-ESTOQUE = [100, 110, 100, 110, 150, 130]
+META = 4137
+ESTOQUE = [100, 101, 100, 110, 115, 113]
 PESO = [10, 7, 2, 13, 11, 26]
 NOME = "IABCDEF"
 CRITERIO = [1, 0, 2, 4, 3, 5]
