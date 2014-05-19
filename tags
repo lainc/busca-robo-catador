@@ -1,0 +1,23 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+CRITERIO	prob.py	/^CRITERIO = (0, 1, 2, None)$/;"	v
+ESTOQUE	prob.py	/^ESTOQUE = (15, 20, 10)$/;"	v
+META	prob.py	/^META = 50$/;"	v
+NOMES	prob.py	/^NOMES = "ABC"$/;"	v
+No	prob.py	/^class No(object):$/;"	c
+PESO	prob.py	/^PESO = (2, 10, 26)$/;"	v
+Problem	prob.py	/^class Problem(object):$/;"	c
+RESTANDO	prob.py	/^RESTANDO = list(ESTOQUE)$/;"	v
+__init__	prob.py	/^    def __init__(self, criterio):$/;"	m	class:Problem
+__init__	prob.py	/^    def __init__(self, link, pai, custo):$/;"	m	class:No
+__str__	prob.py	/^    def __str__(self):$/;"	m	class:Problem	file:
+custo	gera_testes.py	/^def custo(meta , items):$/;"	f
+dfs	prob.py	/^def dfs(problem):$/;"	f
+meta	gera_testes.py	/^meta = 25  # o peso maximo da mochila$/;"	v
+pesos	gera_testes.py	/^pesos = [10, 7, 1]  # sempre coloque em ordem decrescente de peso$/;"	v
+prob	prob.py	/^    prob = Problem(META, PESO, ESTOQUE, LIMIT)$/;"	v
+trata_objetivo	prob.py	/^    def trata_objetivo(no, pesoAlcançado):$/;"	m	class:Problem
