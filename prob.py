@@ -12,30 +12,23 @@ class Problem(object):
         self.estoque = [0] + estoque
         self.criterio = [0] + [x + 1 for x in criterio]  # criterio para ordem de visita de nó filho
         self.criterio.append(None)
-        self.melhor = self.inicial
-        self.melhor_precisao = 0
-        self.tipo = tipo
 
-    def trata_objetivo(self, no, peso_total):
-        """Atualiza o melhor candidato. Retorna True se é pra finalizar busca."""
-        nova_precisao = peso_total  # quão perto chegou da capacidade
-        if (peso_total == self.meta) and (self.tipo == "a*"):
-            return True
-        if nova_precisao > self.melhor_precisao:
-            self.melhor = no  # medida de desempenho primária é se chega no alvo
-            self.melhor_precisao = nova_precisao
-        elif nova_precisao == self.melhor_precisao:
-            if no.custo < self.melhor.custo: # segundo objetivo é o custo em passos
-                self.melhor = no
-                self.melhor_precisao = nova_precisao
-        return False
+    @staticmethod
+    def trata_objetivo(novo, peso_novo, melhor, peso_melhor):
+        """Retorna o melhor nó entre novo e melhor segundo os criterios do problema."""
+        if peso_novo > peso_melhor:
+            return novo, peso_novo
+        elif peso_novo == peso_melhor and novo.custo < melhor.custo:
+            return novo, peso_novo
+        return melhor, peso_melhor
 
     def solucao(self):
         """Retorna uma descrição de texto do resultado."""
         no = self.melhor
         acoes = [0] * (len(self.criterio) - 1)
         peso = self.melhor_precisao
-        resposta = "O melhor caminho teve custo {}, o peso calculado para se coletar foi de {}".format(no.custo, peso)
+        resposta = "O melhor caminho teve custo"
+        "{}, o peso calculado para se coletar foi de {}".format(no.custo, peso)
         while no != self.inicial:
             acoes[no.estado] += 1
             no = no.pai
@@ -43,10 +36,8 @@ class Problem(object):
         return "{}. A sequencia do objetivo é: pegar {}.".format(resposta, ", ".join(acoes))
 
     def __str__(self):
-        val_vars = [self.meta, self.peso, self.inicial, self.estoque,
-            self.criterio, self.melhor, self.melhor_precisao]
-        n_vars = ["meta", "peso", "inicial", "estoque",
-            "criterio", "melhor", "melhor_precisao"]
+        val_vars = [self.meta, self.peso, self.inicial, self.estoque, self.criterio]
+        n_vars = ["meta", "peso", "inicial", "estoque", "criterio"]
         var_list = [": ".join(map(str, [x, y])) for x, y in zip(n_vars, val_vars)]
         return "\n".join(var_list)
 
@@ -63,6 +54,8 @@ class No(object):
     def __str__(self):
         return "{}".format(self.estado)
 
+INICIAL = 1
+
 def dfs(problema, criterio, para_na_solucao=False):
     """Retorna uma solução de menor custo dado uma especificação de problema.
 
@@ -72,30 +65,35 @@ def dfs(problema, criterio, para_na_solucao=False):
 
     """
     pilha = [problema.inicial]
+    melhor = problema.inicial    # O nó com peso mais próximo à meta e de menor custo...
+    peso_melhor = 0              # e o peso alcançado nesse nó.
     peso_atual = 0
-    melhor = problema.inicial  # O nó com peso mais próximo à meta e de menor custo...
-    peso_do_melhor             # e o peso alcançado nesse nó.
-    memo = [problema.meta+1] * problema.meta  # para memoização.
+    memo = [problema.meta+1] * problema.meta    # para memoização.
 
     while pilha != []:
         atual = pilha[-1]
 
-        if criterio[atual.prox] is None:  # O nó atual foi explorado por completo.
+        if criterio[atual.prox_filho] is None:
+            # O nó atual foi explorado por completo.
             if atual.eh_folha:
-                melhor, peso_do_melhor = problem.trata_objetivo(atual, peso_atual)
-                if problem
-                    break
-                # atual é nó folha,  nó interno não precisa tratar, nunca é ótimo.
+                # so precisa checar objetivo nas folhas
+                melhor, peso_melhor = problema.trata_objetivo(atual, peso_atual, melhor, peso_melhor)
+                if para_no_melhor and peso_do_melhor == problema.meta:
+                    return problema.solucao(melhor)
+
             peso_atual -= problema.peso[atual.estado]
-            if atual.estado != 0:
+            if atual.estado != INICIAL:
                 problema.estoque[atual.estado] += 1
-            pilha.pop()
-        else:  # ainda tem estados sucessores para expandir / nós filhos para visitar.
-            while (criterio[atual.prox_filho] is not None): # pega o prox no filho valido.
+            del pilha[-1]
+        else:
+            # ainda tem estados sucessores para expandir / nós filhos para visitar.
+            while (criterio[atual.prox_filho] is not None):
+                # encontra proximo no filho valido, i.e. soma do peso < meta,
+                # e sem caminho de mesmo peso e menor custo.
                 peso_filho = peso_atual + problema.peso[criterio[atual.prox_filho]]
                 if (peso_filho < problema.meta) and (atual.custo + 1 < memo[peso_filho]):
                     break
-                atual.prox_filho += 1 # pega o arco/link pro próximo filho válido.
+                atual.prox_filho += 1
 
             # atual.prox agora é o proximo filho segundo CRITERIO ou acabou os filhos.
             if criterio[atual.prox_filho] is not None:
