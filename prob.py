@@ -4,7 +4,7 @@ from random import shuffle
 
 
 class Problem(object):
-    """Problema representa """
+    """Problema representa uma especificação do problema e dos estados mantidos."""
     def __init__(self, meta, criterio, peso, estoque, tipo):
         self.meta = meta
         self.peso = [0] + peso
@@ -12,7 +12,6 @@ class Problem(object):
         self.estoque = [0] + estoque
         self.criterio = [0] + [x + 1 for x in criterio]  # criterio para ordem de visita de nó filho
         self.criterio.append(None)
-        self.memo = [meta+1] * meta
         self.melhor = self.inicial
         self.melhor_precisao = 0
         self.tipo = tipo
@@ -32,11 +31,11 @@ class Problem(object):
         return False
 
     def solucao(self):
+        """Retorna uma descrição de texto do resultado."""
         no = self.melhor
         acoes = [0] * (len(self.criterio) - 1)
         peso = self.melhor_precisao
         resposta = "O melhor caminho teve custo {}, o peso calculado para se coletar foi de {}".format(no.custo, peso)
-
         while no != self.inicial:
             acoes[no.estado] += 1
             no = no.pai
@@ -55,10 +54,10 @@ class Problem(object):
 class No(object):
     """Class da nó da arvore de busca"""
     def __init__(self, indice_item, link, pai, custo):
-        self.estado = indice_item  # Indice do item em problema.peso e problema.estoque do objeto candidato
+        self.estado = indice_item  # Indice do item em problema.peso e problema.estoque do objeto candidato.
         self.pai = pai
         self.custo = custo
-        self.eh_folha = True  # a principio é folha, caso tenha filho valido, deixa de ser
+        self.eh_folha = True  # A principio é folha, caso tenha filho valido, deixa de ser.
         self.prox = link
 
     def __str__(self):
@@ -74,29 +73,31 @@ def dfs(problema, criterio, para_na_solucao=False):
     """
     pilha = [problema.inicial]
     peso_atual = 0
-    melhor = problema.inicial  # nó com peso mais próximo à meta e de menor custo
+    melhor = problema.inicial  # O nó com peso mais próximo à meta e de menor custo...
+    peso_do_melhor             # e o peso alcançado nesse nó.
+    memo = [problema.meta+1] * problema.meta  # para memoização.
 
     while pilha != []:
         atual = pilha[-1]
 
-        if criterio[atual.prox] is None:  # nó atual foi explorado por completo
+        if criterio[atual.prox] is None:  # O nó atual foi explorado por completo.
             if atual.eh_folha:
-                problem.trata_objetivo(atual, peso_atual, para_na_solucao):
+                melhor, peso_do_melhor = problem.trata_objetivo(atual, peso_atual)
                 if problem
                     break
-                # atual é nó folha, nó interno não precisa tratar, nunca é ótimo
+                # atual é nó folha,  nó interno não precisa tratar, nunca é ótimo.
             peso_atual -= problema.peso[atual.estado]
             if atual.estado != 0:
                 problema.estoque[atual.estado] += 1
             pilha.pop()
-        else:
-            while (criterio[atual.prox_filho] is not None): # pega o prox no filho valido
+        else:  # ainda tem estados sucessores para expandir / nós filhos para visitar.
+            while (criterio[atual.prox_filho] is not None): # pega o prox no filho valido.
                 peso_filho = peso_atual + problema.peso[criterio[atual.prox_filho]]
                 if (peso_filho < problema.meta) and (atual.custo + 1 < memo[peso_filho]):
                     break
-                atual.prox_filho += 1 # pega o arco/link pro próximo filho válido
+                atual.prox_filho += 1 # pega o arco/link pro próximo filho válido.
 
-            # atual.prox agora é o proximo filho segundo CRITERIO ou acabou os filhos
+            # atual.prox agora é o proximo filho segundo CRITERIO ou acabou os filhos.
             if criterio[atual.prox_filho] is not None:
                 item = criterio[atual.prox_filho]
                 atual.eh_folha = False  # teve filho
