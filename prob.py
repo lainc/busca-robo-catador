@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from random import shuffle
-
 
 class Problem(object):
     """Problema representa uma especificação do problema e dos estados mantidos."""
-    def __init__(self, meta, ordem, peso, estoque, tipo):
+    def __init__(self, meta, ordem, peso, estoque):
         self.meta = meta
         self.peso = [0] + peso
         self.inicial = No(0, 1, None, 0)
         self.estoque = [0] + estoque
         self.ordem = [0] + [x + 1 for x in ordem] + [None]  #  ordem de visita de nó filho
-        self.passos = 0
 
     @staticmethod
     def trata_objetivo(novo, peso_novo, melhor, peso_melhor):
@@ -22,16 +19,18 @@ class Problem(object):
             return novo, peso_novo
         return melhor, peso_melhor
 
-    def solucao(self, melhor, peso_alcancado):
+    def solucao(self, no, peso_alcancado, passos):
         """Retorna uma descrição de texto do resultado."""
+        resposta = ["O melhor caminho teve custo de %d" % no.custo,
+                    "O peso calculado para se coletar foi de %d" % peso_alcancado,
+                    "A busca levou %d passos.\nA sequencia de ações é: " % passos]
         acoes = [0] * (len(self.ordem) - 1)
-        resposta = "O melhor caminho teve custo"
-        "{}, o peso calculado para se coletar foi de {}".format(no.custo, peso)
         while no != self.inicial:
             acoes[no.estado] += 1
             no = no.pai
-        acoes = ["{} de {} ({} kilos)".format(n, i, self.peso[i]) for (i, n) in enumerate(acoes) if n > 0]
-        return "{}. A sequencia do objetivo é: pegar {}.".format(resposta, ", ".join(acoes))
+        acoes = ["{} de {} ({} kg)".format(n, i, self.peso[i]) for (i, n) in enumerate(acoes) if n > 0]
+        resposta.append(", ".join(acoes))
+        return "\n".join(resposta)
 
     def __str__(self):
         val_vars = [self.meta, self.peso, self.inicial, self.estoque, self.ordem]
@@ -41,7 +40,7 @@ class Problem(object):
 
 
 class No(object):
-    """Class da nó da arvore de busca"""
+    """Classe do nó da arvore de busca"""
     def __init__(self, indice_item, link, pai, custo):
         self.estado = indice_item  # Indice do item em problema.peso e problema.estoque do objeto candidato.
         self.pai = pai
@@ -50,23 +49,25 @@ class No(object):
         self.prox_filho = link
 
     def __str__(self):
-        return "{}".format(self.estado)
+        return str(self.estado)
 
 INICIAL = 1
 
-def dfs(problema, ordem, para_na_solucao=False):
-    """Retorna uma solução de menor custo dado uma especificação de problema.
+def _dfs(problema, ordem, para_na_solucao=False):
+    """
+    Retorna uma solução de menor custo dado uma especificação de problema.
 
-    :param problema: A especificação com estado inicial, estoque, ...
-    :param para_na_solucao: se deve-se para na primeira solução
-    :param ordem: representa uma função de avaliação ou não (se for randomico).
+    problema: A especificação com estado inicial, estoque, etc.
+    para_na_solucao: se deve-se parar na primeira solução encontrada.
+    ordem: representa uma função de avaliação ou sem heuristica (se for randomico).
 
     """
     pilha = [problema.inicial]
     melhor = problema.inicial                   # O nó com peso mais próximo à meta e de menor custo...
-    peso_melhor = 0                             # e o peso alcançado nesse nó.
+    peso_melhor = 0                             # E o peso alcançado nesse nó.
     peso_atual = 0
-    memo = [problema.meta+1] * problema.meta    # para memoização.
+    memo = [problema.meta+1] * problema.meta    # Para memoização.
+    passos = 0                                  # Para contar e comparar os 2 algoritmos.
 
     while pilha != []:
         atual = pilha[-1]
@@ -77,7 +78,7 @@ def dfs(problema, ordem, para_na_solucao=False):
                 # so precisa checar objetivo nas folhas
                 melhor, peso_melhor = problema.trata_objetivo(atual, peso_atual, melhor, peso_melhor)
                 if para_na_solucao and peso_melhor == problema.meta:
-                    return problema.solucao(melhor)
+                    return problema.solucao(melhor, peso_melhor, passos)
             peso_atual -= problema.peso[atual.estado]
             if atual.estado != INICIAL:
                 problema.estoque[atual.estado] += 1
@@ -88,7 +89,7 @@ def dfs(problema, ordem, para_na_solucao=False):
                 # Encontra proximo no filho valido, i.e. soma do peso < meta,
                 # e sem caminho de mesmo peso e menor custo.
                 peso_filho = peso_atual + problema.peso[ordem[atual.prox_filho]]
-                if (peso_filho < problema.meta) and (atual.custo + 1 < memo[peso_filho]):
+                if (peso_filho < problema.meta) and (atual.custo + 1 <= memo[peso_filho]):
                     break
                 atual.prox_filho += 1
 
@@ -104,35 +105,55 @@ def dfs(problema, ordem, para_na_solucao=False):
                     novo.prox_filho += 1  # o próximo item é o mesmo do anterior a menos que acabe o estoque
                 pilha.append(novo)
                 atual.eh_folha = False  # teve filho
-                atual.prox += 1
-    return problema.solucao(melhor)
+                atual.prox_filho += 1
+                passos += 1
+        # end while
+    return problema.solucao(melhor, peso_melhor, passos)
 
 def busca_em_profundidade(meta, ordem, peso, estoque):
-    shuffle(ordem)k
-    problema = Problem(meta, ordem, peso, estoque, "profundidade")
-    dfs(problema)
-    return problema.solucao()
+    """
+    Retorna uma solução de menor custo paro o problema.
+
+    para_na_solucao: se deve-se para na primeira solução
+    ordem: representa uma função de avaliação ou não (se for randomico).
+    peso: uma lista de pesos dos objetos.
+    estoque: listo de quantidades dos objetos.
+    """
+    problema = Problem(meta, ordem, peso, estoque)
+    return _dfs(problema, problema.ordem)
 
 def busca_a_asterisco(meta, ordem, peso, estoque):
-    ordem = sorted([(i, v) for i, v in enumerate(peso)], key=lambda x: x[1])
-    ordem = reversed([x[0] for x in ordem])
-    problema = Problem(META, ordem, PESO, ESTOQUE, "a*")
-    dfs(problema)
-    return problema.solucao()
+     """
+     Retorna uma solução de menor custo paro o problema.
 
-META = 4137
-ESTOQUE = [100, 101, 100, 110, 115, 113]
-PESO = [10, 7, 2, 13, 11, 26]
-NOME = "IABCDEF"
-ordem = [1, 0, 2, 4, 3, 5]
+     para_na_solucao: se deve-se para na primeira solução
+     ordem: representa uma função de avaliação ou não (se for randomico).
+     peso: uma lista de pesos dos objetos.
+     estoque: listo de quantidades dos objetos.
+     """
+     ordem = sorted([(i, v) for i, v in enumerate(peso)], key=lambda x: x[1], reverse=True)
+     ordem = [x for x, _ in ordem]
+     problema = Problem(meta, ordem, peso, estoque)
+     return _dfs(problema, problema.ordem, True)
 
 if __name__ == "__main__":
-    print "capacidade do robô de %d kilos" % META
+    NOME = "IABCDEF"
+    # META = 236
+    # ESTOQUE = [100, 101, 100, 110, 115, 113]
+    # PESO = [10, 7, 2, 13, 11, 26]
+    # ORDEM = [1, 0, 2, 4, 3, 5]
+
+    META = 501
+    WEIGHT = [2, 10, 26, 50, 100]
+    SUPPLY = [100, 10, 15, 20, 10]
+    ORDEM = [1, 0, 2, 4, 3, 5]
+
+    print "capacidade do robô de %d quilogramas" % META
     print "objetos para levar são esses:\n\n(codigo, peso, estoque)"
     print "\n".join(" ".join([str(x), str(y), str(z)]) for x, y, z in zip(xrange(len(ESTOQUE)), PESO, ESTOQUE))
     print "================="
     print "pela busca em profundidade:"
-    print busca_em_profundidade(META, ordem, PESO, ESTOQUE)
+    print busca_em_profundidade(META, ORDEM, PESO, ESTOQUE)
     print "================="
     print "Pela busca A*:"
-    print busca_a_asterisco(META, ordem, PESO, ESTOQUE)
+    print busca_a_asterisco(META, ORDEM, PESO, ESTOQUE)
