@@ -4,7 +4,7 @@ from random import shuffle
 
 
 class Problem(object):
-    """docstring for ClassName"""
+    """Problema representa """
     def __init__(self, meta, criterio, peso, estoque, tipo):
         self.meta = meta
         self.peso = [0] + peso
@@ -18,7 +18,7 @@ class Problem(object):
         self.tipo = tipo
 
     def trata_objetivo(self, no, peso_total):
-        """Atualiza o melhor candidato. Retorna True se é pra finalizar."""
+        """Atualiza o melhor candidato. Retorna True se é pra finalizar busca."""
         nova_precisao = peso_total  # quão perto chegou da capacidade
         if (peso_total == self.meta) and (self.tipo == "a*"):
             return True
@@ -44,13 +44,12 @@ class Problem(object):
         return "{}. A sequencia do objetivo é: pegar {}.".format(resposta, ", ".join(acoes))
 
     def __str__(self):
-        val_vars = [
-            self.meta, self.peso, self.inicial, self.estoque,
-            self.criterio, self.melhor, self.melhor_precisao ]
-        n_vars = [
-            "meta", "peso", "inicial", "estoque",
-            "criterio", "melhor", "melhor_precisao" ]
-        return "\n".join([": ".join(map(str, [x, y])) for x, y in zip(n_vars, val_vars)])
+        val_vars = [self.meta, self.peso, self.inicial, self.estoque,
+            self.criterio, self.melhor, self.melhor_precisao]
+        n_vars = ["meta", "peso", "inicial", "estoque",
+            "criterio", "melhor", "melhor_precisao"]
+        var_list = [": ".join(map(str, [x, y])) for x, y in zip(n_vars, val_vars)]
+        return "\n".join(var_list)
 
 
 class No(object):
@@ -65,40 +64,45 @@ class No(object):
     def __str__(self):
         return "{}".format(self.estado)
 
+def dfs(problema, criterio, para_na_solucao=False):
+    """Retorna uma solução de menor custo dado uma especificação de problema.
 
-def dfs(problema):
-    """Retorna uma solução de menor custo, dado um Problema problema"""
-    peso = problema.peso
-    criterio = problema.criterio
-    memo = problema.memo
+    :param problema: A especificação com estado inicial, estoque, ...
+    :param para_na_solucao: se deve-se para na primeira solução
+    :param criterio: representa uma função de avaliação ou não (se for randomico).
+
+    """
     pilha = [problema.inicial]
     peso_atual = 0
+    melhor = problema.inicial  # nó com peso mais próximo à meta e de menor custo
 
     while pilha != []:
         atual = pilha[-1]
+
         if criterio[atual.prox] is None:  # nó atual foi explorado por completo
             if atual.eh_folha:
-                if (problema.trata_objetivo(atual, peso_atual)):
+                problem.trata_objetivo(atual, peso_atual, para_na_solucao):
+                if problem
                     break
                 # atual é nó folha, nó interno não precisa tratar, nunca é ótimo
-            peso_atual -= peso[atual.estado]
+            peso_atual -= problema.peso[atual.estado]
             if atual.estado != 0:
                 problema.estoque[atual.estado] += 1
             pilha.pop()
         else:
-            while (criterio[atual.prox] is not None):
-                prox_peso = peso_atual + peso[criterio[atual.prox]]
-                if (prox_peso < problema.meta) and (atual.custo + 1 < memo[prox_peso]):
+            while (criterio[atual.prox_filho] is not None): # pega o prox no filho valido
+                peso_filho = peso_atual + problema.peso[criterio[atual.prox_filho]]
+                if (peso_filho < problema.meta) and (atual.custo + 1 < memo[peso_filho]):
                     break
-                atual.prox += 1 # pega o arco/link pro próximo filho válido
+                atual.prox_filho += 1 # pega o arco/link pro próximo filho válido
 
             # atual.prox agora é o proximo filho segundo CRITERIO ou acabou os filhos
-            if criterio[atual.prox] is not None:
-                item = criterio[atual.prox]
+            if criterio[atual.prox_filho] is not None:
+                item = criterio[atual.prox_filho]
                 atual.eh_folha = False  # teve filho
-                novo = No(item, atual.prox, atual, atual.custo + 1)
+                novo = No(item, atual.prox_filho, atual, atual.custo + 1)
                 atual.prox += 1
-                peso_atual += peso[item]
+                peso_atual += problema.peso[item]
                 if novo.custo < memo[peso_atual]:
                     memo[peso_atual] = novo.custo
                 problema.estoque[item] -= 1
