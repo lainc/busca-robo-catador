@@ -88,9 +88,11 @@ def _avaliador_por_profundidade(problema, estado, custo):
 
 def busca_profundindade(problema):
     return _dfs(problema, list.append, list.pop,
+            lambda (x,y,z): 1)
 
 def busca_a_asterisko(problema):
-    return _dfs(problema, heappush, heappop, para_no_primeiro=True)
+    return _dfs(problema, heappush, heappop,
+                _avaliador_a_asterisko, para_no_primeiro=True)
 
 # NOME = "ABC"
 # META = 33
