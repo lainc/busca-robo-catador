@@ -50,9 +50,10 @@ class Node(object):
                   x) for x in xrange(indice, N) if resto[x] > 0 and META >= peso + P[x]]
 
 
-def _dfs(problema, push, pop, para_no_primeiro=False):
+
+def _dfs(problema, push, pop, avaliador, para_no_primeiro=False):
     P = problema.peso
-    borda = [ (META/P[-1], Node(problema.inicial, 0, 0))]
+    borda = [ (0, Node(problema.inicial, 0, 0))]
     melhor = borda[0][1]
     peso_melhor = 0
     passos = 0
@@ -73,14 +74,17 @@ def _dfs(problema, push, pop, para_no_primeiro=False):
             else:
                 vistos.add(estado_sucessor)
             no_filho = Node(estado_sucessor, ipeso_sucessor, atual.custo + 1)
-            h = no_filho.custo + (META - estado_sucessor[PESO]) / P[ipeso_sucessor]
+            h = avaliador(problema, no)
             push(borda, (h, no_filho))
             passos += 1
     print "========= repetidos: %d" % repetidos
     return melhor, passos
 
+def _avaliador_a_asterisko(problema, estado, custo):
+    return no.custo + (problema.meta - P[no.indice])/P[no.indice]
+
 def busca_profundindade(problema):
-    return _dfs(problema, list.append, list.pop)
+    return _dfs(problema, list.append, list.pop, lambda x:)
 
 def busca_a_asterisko(problema):
     return _dfs(problema, heappush, heappop, para_no_primeiro=True)
@@ -109,9 +113,9 @@ P = problema.peso
 if __name__ == "__main__":
     # for k in sol.__dict__.keys():
         # print "sol.",k,"=",sol.__dict__[k]
-    print "================="
+    print "===================================="
     print "Resultado da busca por profundidade:"
     print problema.solucao(*busca_a_asterisko(problema))
-    print "================="
+    print "===================================="
     print "Resultado da busca A*:"
     print problema.solucao(*busca_a_asterisko(problema))
