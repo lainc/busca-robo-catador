@@ -60,7 +60,7 @@ def _dfs(problema, push, pop, avaliador, para_no_primeiro=False):
     vistos = set()
     repetidos = 0
     while borda != []:
-        atual = heappop(borda)[1]
+        atual = pop(borda)[1]
         #for k in atual.__dict__.keys():
             #print "atual.",k,"=",atual.__dict__[k]
         peso_atual = atual.estado[PESO]
@@ -83,8 +83,11 @@ def _dfs(problema, push, pop, avaliador, para_no_primeiro=False):
 def _avaliador_a_asterisko(problema, estado, custo):
     return no.custo + (problema.meta - P[no.indice])/P[no.indice]
 
+def _avaliador_por_profundidade(problema, estado, custo):
+    return 1
+
 def busca_profundindade(problema):
-    return _dfs(problema, list.append, list.pop, lambda x:)
+    return _dfs(problema, list.append, list.pop,
 
 def busca_a_asterisko(problema):
     return _dfs(problema, heappush, heappop, para_no_primeiro=True)
