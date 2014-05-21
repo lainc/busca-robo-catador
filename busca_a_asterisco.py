@@ -8,7 +8,8 @@ RESTO = 1
 
 class Problem(object):
     """docstring for ClassName"""
-    def __init__(self, peso, estoque):
+    def __init__(self, meta, peso, estoque):
+        self.meta = meta
         self.estoque = tuple([x for (x, _) in
             sorted(zip(estoque, peso),key=lambda(x): x[1], reverse=True)])
         self.peso = tuple(sorted(peso, reverse=True))
@@ -47,7 +48,7 @@ class Node(object):
         peso = self.estado[PESO]
         resto = self.estado[RESTO]
         return [((peso +  P[x], resto[:x] + (resto[x] - 1,) + resto[x+1:]),
-                  x) for x in xrange(indice, N) if resto[x] > 0 and META >= peso + P[x]]
+                  x) for x in xrange(indice, N) if resto[x] > 0 and problema.meta >= peso + P[x]]
 
 
 
@@ -74,13 +75,13 @@ def _dfs(problema, push, pop, avaliador, para_no_primeiro=False):
             else:
                 vistos.add(estado_sucessor)
             no_filho = Node(estado_sucessor, ipeso_sucessor, atual.custo + 1)
-            h = avaliador(problema, no)
+            h = avaliador(problema, no_filho)
             push(borda, (h, no_filho))
             passos += 1
     print "========= repetidos: %d" % repetidos
     return melhor, passos
 
-def _avaliador_a_asterisko(problema, estado, custo):
+def _avaliador_a_asterisko(problema, no):
     return no.custo + (problema.meta - P[no.indice])/P[no.indice]
 
 def _avaliador_por_profundidade(problema, estado, custo):
@@ -88,7 +89,7 @@ def _avaliador_por_profundidade(problema, estado, custo):
 
 def busca_profundindade(problema):
     return _dfs(problema, list.append, list.pop,
-            lambda (x,y,z): 1)
+            lambda (x, y): 1)
 
 def busca_a_asterisko(problema):
     return _dfs(problema, heappush, heappop,
@@ -112,7 +113,7 @@ ORDEM = [1, 0, 2, 4, 3, 5]
 
 N = len(ESTOQUE)
 
-problema = Problem(PESOS, ESTOQUE)
+problema = Problem(META, PESOS, ESTOQUE)
 P = problema.peso
 
 if __name__ == "__main__":
