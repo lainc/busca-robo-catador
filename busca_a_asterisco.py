@@ -82,14 +82,14 @@ def _dfs(problema, push, pop, avaliador, para_no_primeiro=False):
     return melhor, passos
 
 def _avaliador_a_asterisko(problema, no):
-    return no.custo + (problema.meta - P[no.indice])/P[no.indice]
+    return no.custo + (problema.meta - no.estado[PESO])/P[no.indice]
 
-def _avaliador_por_profundidade(problema, estado, custo):
-    return 1
+def _avaliador_por_profundidade(problema, no):
+    return None
 
-def busca_profundindade(problema):
+def busca_por_profundidade(problema):
     return _dfs(problema, list.append, list.pop,
-            lambda (x, y): 1)
+            _avaliador_a_asterisko)
 
 def busca_a_asterisko(problema):
     return _dfs(problema, heappush, heappop,
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         # print "sol.",k,"=",sol.__dict__[k]
     print "===================================="
     print "Resultado da busca por profundidade:"
-    print problema.solucao(*busca_a_asterisko(problema))
+    print problema.solucao(*busca_por_profundidade(problema))
     print "===================================="
     print "Resultado da busca A*:"
     print problema.solucao(*busca_a_asterisko(problema))
