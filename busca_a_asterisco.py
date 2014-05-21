@@ -28,7 +28,7 @@ class Problem(object):
         resposta = ["O melhor caminho teve custo de %d" % no.custo,
                     "O peso calculado para se coletar foi de %d" % no.estado[PESO],
                     "A busca levou %d passos.\nA sequência de ações é:" % passos]
-        acoes = [str(self.estoque[i] - resto) for i, resto in enumerate(no.estado[RESTO])]
+        acoes = [self.estoque[i] - resto for i, resto in enumerate(no.estado[RESTO])]
         descricao = ["{} do item {} ({} kg)".format(n, i, self.peso[i]) for (i, n) in enumerate(acoes) if n > 0]
         resposta.append("pegar " + ", ".join(descricao))
         return "\n".join(resposta)
@@ -50,7 +50,7 @@ class Node(object):
                   x) for x in xrange(indice, N) if resto[x] > 0 and META >= peso + P[x]]
 
 
-def busca_a_asterisko(problema):
+def _dfs(problema, push, pop, para_no_primeiro=False):
     P = problema.peso
     borda = [ (META/P[-1], Node(problema.inicial, 0, 0))]
     melhor = borda[0][1]
@@ -64,7 +64,7 @@ def busca_a_asterisko(problema):
             #print "atual.",k,"=",atual.__dict__[k]
         peso_atual = atual.estado[PESO]
         melhor, peso_melhor = problema.trata_objetivo(atual, peso_atual, melhor, peso_melhor)
-        if peso_melhor == META:
+        if peso_melhor == META and para_no_primeiro:
             print "========= repetidos: %d" % repetidos
             return melhor, passos
         for estado_sucessor, ipeso_sucessor in atual.expandir():
@@ -74,23 +74,34 @@ def busca_a_asterisko(problema):
                 vistos.add(estado_sucessor)
             no_filho = Node(estado_sucessor, ipeso_sucessor, atual.custo + 1)
             h = no_filho.custo + (META - estado_sucessor[PESO]) / P[ipeso_sucessor]
-            heappush(borda, (h, no_filho))
+            push(borda, (h, no_filho))
             passos += 1
     print "========= repetidos: %d" % repetidos
     return melhor, passos
+
+def busca_profundindade(problema):
+    return _dfs(problema, list.append, list.pop)
+
+def busca_a_asterisko(problema):
+    return _dfs(problema, heappush, heappop, para_no_primeiro=True)
+
+# NOME = "ABC"
+# META = 33
+# ESTOQUE = [2,3,4]
+# PESOS = [7, 2, 13]
+
+# NOME = "ABCDEF"
+# META = 25
+# ESTOQUE = [2,3,4]
+# PESOS = [2,3,4]
 
 NOME = "IABCDEF"
 META = 287
 ESTOQUE = [100, 101, 100, 110, 115, 113]
 PESOS = [10, 7, 2, 13, 11, 26]
-N = len(ESTOQUE)
+ORDEM = [1, 0, 2, 4, 3, 5]
 
-# NOME = "IABCDEF"
-# META = 25
-# ESTOQUE = [2,3,4]
-# PESOS = [2,6,4]
-# ORDEM = [1, 0, 2, 4, 3, 5]
-# N = len(ESTOQUE)
+N = len(ESTOQUE)
 
 problema = Problem(PESOS, ESTOQUE)
 P = problema.peso
@@ -98,6 +109,9 @@ P = problema.peso
 if __name__ == "__main__":
     # for k in sol.__dict__.keys():
         # print "sol.",k,"=",sol.__dict__[k]
+    print "================="
+    print "Resultado da busca por profundidade:"
+    print problema.solucao(*busca_a_asterisko(problema))
     print "================="
     print "Resultado da busca A*:"
     print problema.solucao(*busca_a_asterisko(problema))

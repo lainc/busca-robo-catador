@@ -97,6 +97,7 @@ def _dfs(problema, ordem, para_na_solucao=False):
             if ordem[atual.prox_filho] is not None:
                 item = ordem[atual.prox_filho]
                 novo = No(item, atual.prox_filho, atual, atual.custo + 1)
+                print "atual", NOME[atual.estado], "prox", atual.prox_filho, "peso", peso_atual, "estoque", "|".join(map(str, problema.estoque)),
                 peso_atual += problema.peso[item]
                 # if novo.custo < memo[peso_atual]:
                 #     memo[peso_atual] = novo.custo
@@ -104,6 +105,7 @@ def _dfs(problema, ordem, para_na_solucao=False):
                 if problema.estoque[item] == 0:
                     novo.prox_filho += 1  # o próximo item é o mesmo do anterior a menos que acabe o estoque
                 pilha.append(novo)
+                print "=>", item, "prox", atual.prox_filho
                 atual.eh_folha = False  # teve filho
                 atual.prox_filho += 1
                 passos += 1
@@ -119,6 +121,8 @@ def busca_em_profundidade(meta, ordem, peso, estoque):
     peso: uma lista de pesos dos objetos.
     estoque: listo de quantidades dos objetos.
     """
+    ordem = sorted([(i, v) for i, v in enumerate(peso)], key=lambda x: x[1], reverse=True)
+    ordem = [x for x, _ in ordem]
     problema = Problem(meta, ordem, peso, estoque)
     return problema.solucao(*_dfs(problema, problema.ordem))
 
@@ -138,10 +142,18 @@ def busca_gulosa_pela_melhor_escolha(meta, ordem, peso, estoque):
 
 if __name__ == "__main__":
     NOME = "IABCDEF"
-    META = 287
-    ESTOQUE = [100, 101, 100, 110, 115, 113]
-    PESO = [10, 7, 2, 13, 11, 26]
-    ORDEM = [1, 0, 2, 4, 3, 5]
+    META = 33
+    ESTOQUE = [2,3,4]
+    PESO = [7, 2, 13]
+    ORDEM = [0,1,2]
+    N = len(ESTOQUE)
+
+
+    # NOME = "IABCDEF"
+    # META = 287
+    # ESTOQUE = [100, 101, 100, 110, 115, 113]
+    # PESO = [10, 7, 2, 13, 11, 26]
+    # ORDEM = [1, 0, 2, 4, 3, 5]
 
     print "capacidade do robô de %d quilogramas" % META
     print "objetos para levar são esses:\n\n(codigo, peso, estoque)"
